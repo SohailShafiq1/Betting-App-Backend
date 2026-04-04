@@ -3,12 +3,12 @@ import Tournament from '../models/Tournament.js';
 
 export const createMatch = async (req, res) => {
   try {
-    const { tournament, teamAName, teamBName, oddsA, oddsB } = req.body;
+    const { tournament, teamAName, teamBName, oddsA, oddsB, matchDate, matchTime } = req.body;
 
     // Validation
-    if (!tournament || !teamAName || !teamBName || !oddsA || !oddsB) {
+    if (!tournament || !teamAName || !teamBName || !oddsA || !oddsB || !matchDate || !matchTime) {
       return res.status(400).json({
-        message: 'Tournament and both team names with odds are required',
+        message: 'Tournament, both team names, odds, match date and time are required',
       });
     }
 
@@ -24,6 +24,8 @@ export const createMatch = async (req, res) => {
       teamBName,
       oddsA: Number(oddsA),
       oddsB: Number(oddsB),
+      matchDate: new Date(matchDate),
+      matchTime,
       teamALogo: req.files?.teamALogo?.[0]
         ? `/uploads/${req.files.teamALogo[0].filename}`
         : undefined,

@@ -18,6 +18,15 @@ const matchSchema = new mongoose.Schema(
       enum: ['OPEN', 'CLOSED'],
       default: 'OPEN',
     },
+    matchDate: {
+      type: Date,
+      required: [true, 'Match date is required'],
+    },
+    matchTime: {
+      type: String,
+      required: [true, 'Match time is required'],
+      match: [/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Time must be in HH:mm format'],
+    },
   },
   { timestamps: true }
 );
