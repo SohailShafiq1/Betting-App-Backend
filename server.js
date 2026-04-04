@@ -8,11 +8,16 @@ import settingsRoutes from './routes/settingsRoutes.js';
 import teamRoutes from './routes/teamRoutes.js';
 import matchRoutes from './routes/matchRoutes.js';
 import betRoutes from './routes/betRoutes.js';
+import depositRoutes from './routes/depositRoutes.js';
 import User from './models/User.js';
 
 dotenv.config();
 
 const app = express();
+
+// Middleware - Raw body for Stripe webhook signature verification
+// MUST be before express.json()
+app.use('/api/deposits/webhook', express.raw({ type: 'application/json' }));
 
 // Middleware
 app.use(cors());
@@ -57,6 +62,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/bets', betRoutes);
+app.use('/api/deposits', depositRoutes);
 
 // Health Check Route
 app.get('/api/health', (req, res) => {
