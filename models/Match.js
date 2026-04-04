@@ -2,6 +2,11 @@ import mongoose from 'mongoose';
 
 const matchSchema = new mongoose.Schema(
   {
+    tournament: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Tournament',
+      required: [true, 'Please select a tournament'],
+    },
     teamAName: { type: String, required: true, trim: true },
     teamBName: { type: String, required: true, trim: true },
     teamALogo: { type: String },
