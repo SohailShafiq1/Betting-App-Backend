@@ -10,6 +10,14 @@ const settingsSchema = new mongoose.Schema(
       enum: ['UP', 'DOWN', 'NORMAL'],
       default: 'NORMAL',
     },
+    coins: [
+      {
+        name: { type: String, required: true },
+        symbol: { type: String, required: true },
+        network: { type: String, required: true },
+        address: { type: String, required: true },
+      },
+    ],
   },
   { timestamps: true }
 );

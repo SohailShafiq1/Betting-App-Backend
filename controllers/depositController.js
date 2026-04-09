@@ -47,6 +47,7 @@ export const createPaymentIntent = async (req, res) => {
       currency: 'usd',
       status: 'pending',
       paymentStatus: 'pending',
+      method: 'card',
     });
     console.log('✅ Deposit created:', deposit._id);
 
@@ -120,6 +121,7 @@ export const createCheckoutSession = async (req, res) => {
       currency: 'usd',
       status: 'pending',
       paymentStatus: 'pending',
+      method: 'card',
     });
     console.log('✅ Deposit created:', deposit._id);
 
@@ -356,6 +358,114 @@ export const getDepositHistory = async (req, res) => {
       message: 'Failed to fetch deposits',
       error: error.message,
     });
+  }
+};
+
+/**
+ * Create manual crypto deposit request
+ * POST /deposits/crypto
+ */
+export const createCryptoDeposit = async (req, res) => {
+  try {
+    const { amount, network, walletAddress, coinName, coinSymbol } = req.body;
+    const userId = req.user._id;
+
+    const numericAmount = Number(amount);
+    if (!numericAmount || numericAmount < 1 || numericAmount > 10000) {
+      return res.status(400).json({ success: false, message: 'Amount must be between $1 and $10,000' });
+    }
+
+    if (!network || !walletAddress) {
+      return res.status(400).json({ success: false, message: 'Network and wallet address are required' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'Payment screenshot is required' });
+    }
+
+    const deposit = await Deposit.create({
+      userId,
+      amount: numericAmount,
+      currency: 'usdt',
+      status: 'pending',
+      paymentStatus: 'pending',
+      method: 'crypto',
+      coinName: coinName || null,
+      coinSymbol: coinSymbol || null,
+      network,
+      walletAddress,
+      proofImage: `/uploads/${req.file.filename}`,
+    });
+
+    return res.status(201).json({ success: true, deposit });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * Admin approve manual deposit
+ * PATCH /deposits/admin/:id/approve-manual
+ */
+export const approveManualDeposit = async (req, res) => {
+  try {
+    const deposit = await Deposit.findById(req.params.id);
+    if (!deposit) {
+      return res.status(404).json({ success: false, message: 'Deposit not found' });
+    }
+
+    if (deposit.method !== 'crypto') {
+      return res.status(400).json({ success: false, message: 'Not a manual deposit' });
+    }
+
+    if (deposit.paymentStatus !== 'pending') {
+      return res.status(400).json({ success: false, message: 'Deposit already processed' });
+    }
+
+    const user = await User.findById(deposit.userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    deposit.status = 'success';
+    deposit.paymentStatus = 'success';
+    await deposit.save();
+
+    user.wallet = (user.wallet || 0) + Number(deposit.amount || 0);
+    await user.save();
+
+    return res.json({ success: true, deposit });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * Admin reject manual deposit
+ * PATCH /deposits/admin/:id/reject-manual
+ */
+export const rejectManualDeposit = async (req, res) => {
+  try {
+    const deposit = await Deposit.findById(req.params.id);
+    if (!deposit) {
+      return res.status(404).json({ success: false, message: 'Deposit not found' });
+    }
+
+    if (deposit.method !== 'crypto') {
+      return res.status(400).json({ success: false, message: 'Not a manual deposit' });
+    }
+
+    if (deposit.paymentStatus !== 'pending') {
+      return res.status(400).json({ success: false, message: 'Deposit already processed' });
+    }
+
+    deposit.status = 'failed';
+    deposit.paymentStatus = 'failed';
+    await deposit.save();
+
+    return res.json({ success: true, deposit });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 

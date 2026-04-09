@@ -10,13 +10,38 @@ const depositSchema = new mongoose.Schema(
     amount: {
       type: Number,
       required: [true, 'Please provide an amount'],
-      min: [10, 'Minimum deposit is $10'],
+      min: [1, 'Minimum deposit is $1'],
       max: [10000, 'Maximum deposit is $10,000'],
     },
     currency: {
       type: String,
       default: 'usd',
-      enum: ['usd', 'eur', 'gbp'],
+      enum: ['usd', 'eur', 'gbp', 'usdt'],
+    },
+    method: {
+      type: String,
+      enum: ['card', 'crypto'],
+      default: 'card',
+    },
+    coinName: {
+      type: String,
+      default: null,
+    },
+    coinSymbol: {
+      type: String,
+      default: null,
+    },
+    network: {
+      type: String,
+      default: null,
+    },
+    walletAddress: {
+      type: String,
+      default: null,
+    },
+    proofImage: {
+      type: String,
+      default: null,
     },
     status: {
       type: String,
