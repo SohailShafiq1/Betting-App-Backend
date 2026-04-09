@@ -1,5 +1,7 @@
 import Match from '../models/Match.js';
 import Tournament from '../models/Tournament.js';
+import Bet from '../models/Bet.js';
+import User from '../models/User.js';
 
 export const createMatch = async (req, res) => {
   try {
@@ -51,6 +53,79 @@ export const getMatches = async (req, res) => {
   try {
     const matches = await Match.find().populate('tournament').sort({ createdAt: -1 });
     res.json(matches);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const updateMatchStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!['OPEN', 'RUNNING', 'FINISHED'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid match status' });
+    }
+
+    const match = await Match.findById(req.params.id);
+    if (!match) {
+      return res.status(404).json({ message: 'Match not found' });
+    }
+
+    match.status = status;
+    await match.save();
+
+    res.json(match);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const setMatchResult = async (req, res) => {
+  try {
+    const { result } = req.body;
+    if (!['A', 'B'].includes(result)) {
+      return res.status(400).json({ message: 'Result must be A or B' });
+    }
+
+    const match = await Match.findById(req.params.id);
+    if (!match) {
+      return res.status(404).json({ message: 'Match not found' });
+    }
+
+    match.result = result;
+    match.status = 'FINISHED';
+    await match.save();
+
+    const openBets = await Bet.find({ match: match._id, status: 'OPEN' });
+    if (openBets.length === 0) {
+      return res.json({ match, settled: 0 });
+    }
+
+    const updates = [];
+    const userWalletUpdates = new Map();
+
+    for (const bet of openBets) {
+      const isWin = bet.choice === result;
+      const payout = isWin ? bet.amount * bet.odds : 0;
+
+      bet.result = isWin ? 'WIN' : 'LOSE';
+      bet.payout = payout;
+      bet.status = 'SETTLED';
+      updates.push(bet.save());
+
+      if (isWin) {
+        const current = userWalletUpdates.get(String(bet.user)) || 0;
+        userWalletUpdates.set(String(bet.user), current + payout);
+      }
+    }
+
+    await Promise.all(updates);
+
+    const walletPromises = Array.from(userWalletUpdates.entries()).map(([userId, amount]) =>
+      User.findByIdAndUpdate(userId, { $inc: { wallet: amount } })
+    );
+    await Promise.all(walletPromises);
+
+    res.json({ match, settled: openBets.length });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

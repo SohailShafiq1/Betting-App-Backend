@@ -15,8 +15,13 @@ const matchSchema = new mongoose.Schema(
     oddsB: { type: Number, required: true, default: 1.8 },
     status: {
       type: String,
-      enum: ['OPEN', 'CLOSED'],
+      enum: ['OPEN', 'RUNNING', 'FINISHED'],
       default: 'OPEN',
+    },
+    result: {
+      type: String,
+      enum: ['A', 'B', 'PENDING'],
+      default: 'PENDING',
     },
     matchDate: {
       type: Date,
