@@ -11,6 +11,7 @@ import tournamentRoutes from './routes/tournamentRoutes.js';
 import matchRoutes from './routes/matchRoutes.js';
 import betRoutes from './routes/betRoutes.js';
 import depositRoutes from './routes/depositRoutes.js';
+import withdrawalRoutes from './routes/withdrawalRoutes.js';
 import User from './models/User.js';
 
 dotenv.config();
@@ -67,6 +68,7 @@ app.use('/api/tournaments', tournamentRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/bets', betRoutes);
 app.use('/api/deposits', depositRoutes);
+app.use('/api/withdrawals', withdrawalRoutes);
 
 // Health Check Route
 app.get('/api/health', (req, res) => {
