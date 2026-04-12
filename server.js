@@ -24,7 +24,25 @@ const app = express();
 app.use('/api/deposits/webhook', express.raw({ type: 'application/json' }));
 
 // Middleware
-app.use(cors());
+const allowedOrigins = [
+  'https://winorabetting.com',
+  'https://www.winorabetting.com',
+  'https://api.winorabetting.com',
+  'http://localhost:5173',
+];
+
+const corsOptions = {
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
