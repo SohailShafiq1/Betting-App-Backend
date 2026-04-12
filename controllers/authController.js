@@ -51,6 +51,7 @@ export const registerUser = async (req, res) => {
       token,
       user: {
         id: user._id,
+        userId: user.userId,
         name: user.name,
         email: user.email,
         role: user.role,
@@ -96,6 +97,7 @@ export const loginUser = async (req, res) => {
       token,
       user: {
         id: user._id,
+        userId: user.userId,
         name: user.name,
         email: user.email,
         role: user.role,
@@ -122,6 +124,7 @@ export const getCurrentUser = async (req, res) => {
       success: true,
       user: {
         id: user._id,
+        userId: user.userId,
         name: user.name,
         email: user.email,
         role: user.role,

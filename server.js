@@ -12,6 +12,7 @@ import matchRoutes from './routes/matchRoutes.js';
 import betRoutes from './routes/betRoutes.js';
 import depositRoutes from './routes/depositRoutes.js';
 import withdrawalRoutes from './routes/withdrawalRoutes.js';
+import friendlyRoutes from './routes/friendlyRoutes.js';
 import User from './models/User.js';
 
 dotenv.config();
@@ -67,6 +68,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/tournaments', tournamentRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/bets', betRoutes);
+app.use('/api/friendly-challenges', friendlyRoutes);
 app.use('/api/deposits', depositRoutes);
 app.use('/api/withdrawals', withdrawalRoutes);
 
