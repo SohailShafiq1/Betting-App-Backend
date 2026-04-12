@@ -49,8 +49,8 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Generate a unique 8-character userId and hash password before saving
-userSchema.pre('save', async function (next) {
+// Generate a unique 8-character userId before validation
+userSchema.pre('validate', async function (next) {
   if (!this.userId) {
     let candidate;
     let existing = true;
@@ -63,6 +63,11 @@ userSchema.pre('save', async function (next) {
     this.userId = candidate;
   }
 
+  next();
+});
+
+// Hash password before saving
+userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     next();
     return;
