@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import { createMatch, getMatches, deleteMatch, updateMatchStatus, setMatchResult } from '../controllers/matchController.js';
+import { createMatch, getMatches, deleteMatch, updateMatch, updateMatchStatus, setMatchResult } from '../controllers/matchController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { protectAdminRole } from '../middleware/adminMiddleware.js';
 
@@ -30,6 +30,7 @@ const matchUpload = upload.fields([
 
 router.post('/', protect, protectAdminRole, matchUpload, createMatch);
 router.get('/', protect, getMatches);
+router.put('/:id', protect, protectAdminRole, matchUpload, updateMatch);
 router.patch('/:id/status', protect, protectAdminRole, updateMatchStatus);
 router.patch('/:id/result', protect, protectAdminRole, setMatchResult);
 router.delete('/:id', protect, protectAdminRole, deleteMatch);

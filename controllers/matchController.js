@@ -58,6 +58,54 @@ export const getMatches = async (req, res) => {
   }
 };
 
+export const updateMatch = async (req, res) => {
+  try {
+    const { tournament, teamAName, teamBName, oddsA, oddsB, matchDate, matchTime } = req.body;
+
+    const match = await Match.findById(req.params.id);
+    if (!match) {
+      return res.status(404).json({ message: 'Match not found' });
+    }
+
+    if (tournament && tournament !== String(match.tournament)) {
+      const newTournament = await Tournament.findById(tournament);
+      if (!newTournament) {
+        return res.status(404).json({ message: 'Tournament not found' });
+      }
+
+      const oldTournament = await Tournament.findById(match.tournament);
+      if (oldTournament) {
+        oldTournament.matchCount = Math.max(0, (oldTournament.matchCount || 1) - 1);
+        await oldTournament.save();
+      }
+
+      newTournament.matchCount = (newTournament.matchCount || 0) + 1;
+      await newTournament.save();
+      match.tournament = tournament;
+    }
+
+    if (teamAName) match.teamAName = teamAName;
+    if (teamBName) match.teamBName = teamBName;
+    if (oddsA) match.oddsA = Number(oddsA);
+    if (oddsB) match.oddsB = Number(oddsB);
+    if (matchDate) match.matchDate = new Date(matchDate);
+    if (matchTime) match.matchTime = matchTime;
+    if (req.files?.teamALogo?.[0]) {
+      match.teamALogo = `/uploads/${req.files.teamALogo[0].filename}`;
+    }
+    if (req.files?.teamBLogo?.[0]) {
+      match.teamBLogo = `/uploads/${req.files.teamBLogo[0].filename}`;
+    }
+
+    await match.save();
+    const updatedMatch = await match.populate('tournament');
+
+    res.status(200).json(updatedMatch);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const updateMatchStatus = async (req, res) => {
   try {
     const { status } = req.body;
